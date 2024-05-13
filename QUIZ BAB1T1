@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Bab 1: Konsep Asas Pemikiran Komputasional</title>
+</head>
+<body>
+    <h2>Quiz Bab 1: Konsep Asas Pemikiran Komputasional</h2>
+
+    <form id="quizForm">
+        <!-- Question 1 -->
+        <p>1. Apakah yang dimaksudkan dengan leraian dalam pemikiran komputasional?</p>
+        <input type="radio" id="q1a1" name="q1" value="wrong">
+        <label for="q1a1">Membandingkan dua objek komputer</label><br>
+        <input type="radio" id="q1a2" name="q1" value="correct">
+        <label for="q1a2">Memecah masalah besar menjadi sub-masalah yang lebih kecil</label><br>
+        <input type="radio" id="q1a3" name="q1" value="wrong">
+        <label for="q1a3">Menggeneralisasi solusi dari satu masalah ke masalah lain</label><br>
+
+        <!-- Question 2 -->
+        <p>2. Pengecaman corak membantu dalam:</p>
+        <input type="radio" id="q2a1" name="q2" value="correct">
+        <label for="q2a1">Identifikasi kesamaan dalam masalah</label><br>
+        <input type="radio" id="q2a2" name="q2" value="wrong">
+        <label for="q2a2">Memecah masalah menjadi bagian-bagian yang lebih kecil</label><br>
+        <input type="radio" id="q2a3" name="q2" value="wrong">
+        <label for="q2a3">Menghilangkan detail yang tidak perlu</label><br>
+
+        <!-- Question 3 -->
+        <p>3. Teknik peniskalaan dalam pemikiran komputasional digunakan untuk:</p>
+        <input type="radio" id="q3a1" name="q3" value="wrong">
+        <label for="q3a1">Mengurangi kompleksitas algoritma</label><br>
+        <input type="radio" id="q3a2" name="q3" value="wrong">
+        <label for="q3a2">Meningkatkan kecepatan pemrosesan</label><br>
+        <input type="radio" id="q3a3" name="q3" value="correct">
+        <label for="q3a3">Mengabaikan detail yang tidak penting</label><br>
+
+        <!-- Additional questions would follow the same pattern -->
+
+        <!-- Submit Button -->
+        <button type="button" onclick="checkAnswers()">Cek Jawaban</button>
+    </form>
+
+    <script>
+        function checkAnswers() {
+            var totalCorrect = 0;
+            var answers = document.forms['quizForm'];
+            var resultText = "";
+            for (var i = 0; i < answers.length; i++) {
+                if (answers[i].checked) {
+                    if (answers[i].value === "correct") {
+                        totalCorrect++;
+                    }
+                }
+            }
+            resultText = "Anda menjawab " + totalCorrect + " pertanyaan dengan benar dari " + answers.length/3 + " pertanyaan.";
+            alert(resultText);
+        }
+    </script>
+</body>
+</html>
