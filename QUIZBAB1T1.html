@@ -12,6 +12,8 @@
         .form-check-label { color: #5a5a5a; }
         .question { background-color: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
         .btn-primary { background-color: #007bff; }
+        .correct { background-color: #d4edda; } /* Green background for correct answers */
+        .incorrect { background-color: #f8d7da; } /* Red background for incorrect answers */
     </style>
 </head>
 <body>
@@ -197,16 +199,24 @@
 
     <script>
         function checkAnswers() {
-            var totalCorrect = 0;
             var answers = document.forms['quizForm'].elements;
+            var totalQuestions = 0;
+            var totalCorrect = 0;
             for (var i = 0; i < answers.length; i++) {
                 if (answers[i].type === 'radio' && answers[i].checked) {
+                    var question = answers[i].closest('.question');
                     if (answers[i].value === 'correct') {
                         totalCorrect++;
+                        question.classList.add('correct');
+                        question.classList.remove('incorrect');
+                    } else {
+                        question.classList.add('incorrect');
+                        question.classList.remove('correct');
                     }
+                    totalQuestions++;
                 }
             }
-            alert("Anda menjawab " + totalCorrect + " pertanyaan dengan benar dari total pertanyaan.");
+            alert("Anda menjawab " + totalCorrect + " pertanyaan dengan benar dari total " + totalQuestions + " pertanyaan.");
         }
     </script>
 
