@@ -6,13 +6,19 @@
     <title>Quiz Bab 1: Konsep Asas Pemikiran Komputasional</title>
     <!-- Link to Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f7f7f7; }
+        .container { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .form-check-label { color: #5a5a5a; }
+        .question { background-color: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .btn-primary { background-color: #007bff; }
+    </style>
 </head>
 <body>
     <div class="container mt-5">
         <h2 class="mb-4">Quiz Bab 1: Konsep Asas Pemikiran Komputasional</h2>
         <form id="quizForm">
-            <div class="form-group">
-                <!-- Question 1 -->
+            <div class="form-group question">
                 <label>1. Apakah yang dimaksudkan dengan leraian dalam pemikiran komputasional?</label>
                 <div class="form-check">
                     <input type="radio" id="q1a1" name="q1" class="form-check-input" value="wrong">
@@ -27,26 +33,27 @@
                     <label class="form-check-label" for="q1a3">Menggeneralisasi solusi dari satu masalah ke masalah lain</label>
                 </div>
             </div>
-            <div class="form-group">
-                <!-- Question 2 -->
-                <label>2. Pengecaman corak membantu dalam:</label>
+
+            <!-- Additional questions will be similar, just with different content -->
+            <!-- This example can be repeated and modified for each subsequent question -->
+            <!-- For instance, question 2 -->
+            <div class="form-group question">
+                <label>2. Apa yang dihasilkan oleh teknik peniskalaan dalam pemikiran komputasional?</label>
                 <div class="form-check">
                     <input type="radio" id="q2a1" name="q2" class="form-check-input" value="correct">
-                    <label class="form-check-label" for="q2a1">Identifikasi kesamaan dalam masalah</label>
+                    <label class="form-check-label" for="q2a1">Mengabaikan detail yang tidak penting</label>
                 </div>
                 <div class="form-check">
                     <input type="radio" id="q2a2" name="q2" class="form-check-input" value="wrong">
-                    <label class="form-check-label" for="q2a2">Memecah masalah menjadi bagian-bagian yang lebih kecil</label>
+                    <label class="form-check-label" for="q2a2">Meningkatkan kompleksitas masalah</label>
                 </div>
                 <div class="form-check">
                     <input type="radio" id="q2a3" name="q2" class="form-check-input" value="wrong">
-                    <label class="form-check-label" for="q2a3">Menghilangkan detail yang tidak perlu</label>
+                    <label class="form-check-label" for="q2a3">Mengidentifikasi kesamaan dalam data</label>
                 </div>
             </div>
 
-            <!-- Additional questions would follow the same pattern -->
-            
-            <!-- Submit Button -->
+            <!-- More questions should be added here following the same format -->
             <button type="button" class="btn btn-primary" onclick="checkAnswers()">Cek Jawaban</button>
         </form>
     </div>
