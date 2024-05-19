@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+</head>
+<body>
+  <section class="bg-primary text-white text-center py-5">
+    <div class="container">
+      <h1 class="display-4">Borang Offline</h1>
+    </div>
+  </section>
+  <form id="form" class="container mt-4" method="POST">
+    <div class="form-group">
+      <label for="namaPeserta">NAMA PESERTA</label>
+      <input id="namaPeserta" class="form-control" type="text" placeholder="Nama Penuh" name="Nama Peserta" required />
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" class="form-control" type="email" placeholder="Your Email" name="Email" />
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input id="password" class="form-control" type="password" placeholder="Katalaluan" name="Password" />
+    </div>
+
+    <div class="form-group">
+      <label for="dob">Tarikh Lahir</label>
+      <input id="dob" class="form-control" type="date" placeholder="Your Date of Birth" name="DOB" />
+    </div>
+
+    <div class="form-group">
+      <label for="tingkatan">Tingkatan</label>
+      <select id="tingkatan" class="form-control" name="Tingkatan" required>
+        <option value="" disabled selected>Select your Tingkatan</option>
+        <option value="1">Tingkatan 1</option>
+        <option value="2">Tingkatan 2</option>
+        <option value="3">Tingkatan 3</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="class">Kelas</label>
+      <select id="class" class="form-control" name="Kelas" required>
+        <option value="" disabled selected>Pilih Kelas</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Jantina</label>
+      <div class="form-check">
+        <input id="genderMale" class="form-check-input" type="radio" name="Jantina" value="male" />
+        <label for="genderMale" class="form-check-label">Male</label>
+      </div>
+      <div class="form-check">
+        <input id="genderFemale" class="form-check-input" type="radio" name="Jantina" value="female" />
+        <label for="genderFemale" class="form-check-label">Female</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-check">
+        <input id="agreeToTerms" class="form-check-input" type="checkbox" name="Agree To Terms" value="yes" />
+        <label for="agreeToTerms" class="form-check-label">Saya Bersetuju</label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Maklumat Tambahan</label>
+      <textarea id="notes" class="form-control" placeholder="Masukkan Maklumat Tambahan" name="Catatan"></textarea>
+    </div>
+
+    <!-- Hidden timestamp field -->
+    <input type="hidden" id="timestamp" name="Timestamp" />
+
+    <div class="form-group">
+      <button class="btn btn-primary" type="submit" id="submit-button">Daftar</button>
+      <button class="btn btn-danger" type="reset">Batal</button>
+    </div>
+  </form>
+  <div id="message" class="alert alert-success mt-4" style="display: none;"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Fetch data from the Google Apps Script
+      fetch("https://script.google.com/macros/s/AKfycbx6worc9YtjNFlOGeDRC-018CPgLkGnVEuJ2XNothUKQVIAwt_4A-nYKQR-uZwYgqhF/exec")
+        .then(response => response.json())
+        .then(data => {
+          // Populate the form fields with the data
+          const tingkatanSelect = document.getElementById("tingkatan");
+          const classSelect = document.getElementById("class");
+
+          data.forEach(item => {
+            if (item["Tingkatan"]) {
+              const option = document.createElement("option");
+              option.value = item["Tingkatan"];
+              option.textContent = `Tingkatan ${item["Tingkatan"]}`;
+              tingkatanSelect.appendChild(option);
+            }
+
+            if (item["Class"]) {
+              const option = document.createElement("option");
+              option.value = item["Class"];
+              option.textContent = item["Class"];
+              classSelect.appendChild(option);
+            }
+          });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+    });
+
+    document.getElementById("form").addEventListener("submit", function (e) {
+      e.preventDefault(); // Prevent the default form submission
+      document.getElementById("message").textContent = "Submitting..";
+      document.getElementById("message").style.display = "block";
+      document.getElementById("submit-button").disabled = true;
+
+      // Set the current timestamp in a more readable format
+      const now = new Date();
+      const formattedTimestamp = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB');
+      document.getElementById("timestamp").value = formattedTimestamp;
+
+      // Collect the form data
+      var formData = new FormData(this);
+      var keyValuePairs = [];
+      for (var pair of formData.entries()) {
+        keyValuePairs.push(pair[0] + "=" + pair[1]);
+      }
+
+      var formDataString = keyValuePairs.join("&");
+
+      // Send a POST request to your Google Apps Script
+      fetch(
+        "https://script.google.com/macros/s/AKfycbx6worc9YtjNFlOGeDRC-018CPgLkGnVEuJ2XNothUKQVIAwt_4A-nYKQR-uZwYgqhF/exec",
+        {
+          redirect: "follow",
+          method: "POST",
+          body: formDataString,
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+          },
+        }
+      )
+        .then(function (response) {
+          // Check if the request was successful
+          if (response.ok) {
+            return response.json(); // Assuming your script returns JSON response
+          } else {
+            throw new Error("Failed to submit the form.");
+          }
+        })
+        .then(function (data) {
+          // Display a success message
+          document.getElementById("message").textContent = "Data submitted successfully!";
+          document.getElementById("message").style.display = "block";
+          document.getElementById("message").classList.add("alert-success");
+          document.getElementById("message").classList.remove("alert-danger");
+          document.getElementById("submit-button").disabled = false;
+          document.getElementById("form").reset();
+
+          setTimeout(function () {
+            document.getElementById("message").textContent = "";
+            document.getElementById("message").style.display = "none";
+          }, 2600);
+        })
+        .catch(function (error) {
+          // Handle errors, you can display an error message here
+          console.error(error);
+          document.getElementById("message").textContent = "An error occurred while submitting the form.";
+          document.getElementById("message").style.display = "block";
+          document.getElementById("message").classList.add("alert-danger");
+          document.getElementById("message").classList.remove("alert-success");
+        });
+    });
+
+    document.getElementById("tingkatan").addEventListener("change", function () {
+      var classSelect = document.getElementById("class");
+      classSelect.innerHTML = ""; // Clear existing options
+
+      var tingkatan = this.value;
+      var classes = {
+        "1": ["1 Agama", "1 Bestari", "1 Cemerlang"],
+        "2": ["2 Agama", "2 Bestari", "2 Cemerlang"],
+        "3": ["3 Agama", "3 Bestari", "3 Cemerlang"],
+      };
+
+      if (classes[tingkatan]) {
+        classes[tingkatan].forEach(function (className) {
+          var option = document.createElement("option");
+          option.value = className;
+          option.textContent = className;
+          classSelect.appendChild(option);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
