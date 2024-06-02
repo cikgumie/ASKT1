@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe vs CikguMie</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            animation: fadeIn 1s;
+        }
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            background-color: white;
+            border: 2px solid #444;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+        .cell:hover {
+            background-color: #ddd;
+        }
+        .X { color: red; }
+        .O { color: blue; }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Tic-Tac-Toe vs CikguMie</h1>
+        <div class="mb-3">
+            <input type="text" id="username" class="form-control" placeholder="Enter your name">
+        </div>
+        <div class="mb-3">
+            <select id="difficulty" class="form-select">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+        <button class="btn btn-primary mb-4" onclick="startGame()">Start Game</button>
+        <div class="game-board" id="gameBoard"></div>
+        <div class="message" id="message"></div>
+        <button class="btn btn-secondary mt-4" onclick="resetGame()">Reset</button>
+    </div>
+
+    <script>
+        let cells = [];
+        const messageElement = document.getElementById('message');
+        const gameBoard = document.getElementById('gameBoard');
+        let isXTurn = true;
+        let username = '';
+        let difficulty = 'easy';
+        const WINNING_COMBINATIONS = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        function handleClick(event) {
+            const cell = event.target;
+            if (isXTurn) {
+                placeMark(cell, 'X');
+                if (checkWin('X')) {
+                    endGame(false, 'X');
+                } else if (isDraw()) {
+                    endGame(true);
+                } else {
+                    swapTurns();
+                    setTimeout(aiMove, 500);
+                }
+            }
+        }
+
+        function placeMark(cell, currentClass) {
+            cell.textContent = currentClass;
+            cell.classList.add(currentClass);
+            cell.removeEventListener('click', handleClick);
+        }
+
+        function swapTurns() {
+            isXTurn = !isXTurn;
+        }
+
+        function checkWin(currentClass) {
+            return WINNING_COMBINATIONS.some(combination => {
+                return combination.every(index => {
+                    return cells[index].textContent === currentClass;
+                });
+            });
+        }
+
+        function isDraw() {
+            return cells.every(cell => {
+                return cell.textContent === 'X' || cell.textContent === 'O';
+            });
+        }
+
+        function endGame(draw, winner = null) {
+            if (draw) {
+                messageElement.textContent = "Draw!";
+            } else {
+                messageElement.textContent = `${winner === 'X' ? username : 'CikguMie'} Wins!`;
+            }
+            cells.forEach(cell => cell.removeEventListener('click', handleClick));
+        }
+
+        function aiMove() {
+            let bestMove;
+            if (difficulty === 'hard') {
+                bestMove = minimax(cells, 'O').index;
+            } else if (difficulty === 'medium') {
+                if (Math.random() > 0.5) {
+                    bestMove = minimax(cells, 'O').index;
+                } else {
+                    bestMove = randomMove();
+                }
+            } else {
+                bestMove = randomMove();
+            }
+            placeMark(cells[bestMove], 'O');
+            if (checkWin('O')) {
+                endGame(false, 'O');
+            } else if (isDraw()) {
+                endGame(true);
+            } else {
+                swapTurns();
+            }
+        }
+
+        function randomMove() {
+            const availableCells = cells.filter(cell => cell.textContent === '');
+            return cells.indexOf(availableCells[Math.floor(Math.random() * availableCells.length)]);
+        }
+
+        function minimax(newBoard, player) {
+            const availSpots = newBoard.filter(cell => cell.textContent === '');
+
+            if (checkWin('X')) {
+                return { score: -10 };
+            } else if (checkWin('O')) {
+                return { score: 10 };
+            } else if (availSpots.length === 0) {
+                return { score: 0 };
+            }
+
+            const moves = [];
+            for (let i = 0; i < availSpots.length; i++) {
+                const move = {};
+                move.index = cells.indexOf(availSpots[i]);
+                newBoard[move.index].textContent = player;
+
+                if (player === 'O') {
+                    const result = minimax(newBoard, 'X');
+                    move.score = result.score;
+                } else {
+                    const result = minimax(newBoard, 'O');
+                    move.score = result.score;
+                }
+
+                newBoard[move.index].textContent = '';
+                moves.push(move);
+            }
+
+            let bestMove;
+            if (player === 'O') {
+                let bestScore = -Infinity;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return moves[bestMove];
+        }
+
+        function startGame() {
+            username = document.getElementById('username').value;
+            difficulty = document.getElementById('difficulty').value;
+            if (!username) {
+                alert('Please enter your name');
+                return;
+            }
+            isXTurn = true;
+            gameBoard.innerHTML = '';
+            cells = [];
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.addEventListener('click', handleClick, { once: true });
+                gameBoard.appendChild(cell);
+                cells[i] = cell;
+            }
+            messageElement.textContent = '';
+        }
+
+        function resetGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
