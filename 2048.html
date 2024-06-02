@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-size: 16px;
+        }
+        .container {
+            text-align: center;
+        }
+        .game-board {
+            display: grid;
+            grid-gap: 10px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #bbada0;
+            border-radius: 10px;
+        }
+        .tile {
+            width: 100%;
+            padding-top: 100%;
+            position: relative;
+            border-radius: 5px;
+            background-color: #cdc1b4;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+        }
+        .tile span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .tile-2 { background-color: #eee4da; color: #776e65; }
+        .tile-4 { background-color: #ede0c8; color: #776e65; }
+        .tile-8 { background-color: #f2b179; color: #f9f6f2; }
+        .tile-16 { background-color: #f59563; color: #f9f6f2; }
+        .tile-32 { background-color: #f67c5f; color: #f9f6f2; }
+        .tile-64 { background-color: #f65e3b; color: #f9f6f2; }
+        .tile-128 { background-color: #edcf72; color: #f9f6f2; }
+        .tile-256 { background-color: #edcc61; color: #f9f6f2; }
+        .tile-512 { background-color: #edc850; color: #f9f6f2; }
+        .tile-1024 { background-color: #edc53f; color: #f9f6f2; }
+        .tile-2048 { background-color: #edc22e; color: #f9f6f2; }
+        .message {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        .score-board {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">2048 Game</h1>
+        <div class="mb-3">
+            <select id="difficulty" class="form-select">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <select id="boardSize" class="form-select mt-3">
+                <option value="4">4x4</option>
+                <option value="5">5x5</option>
+                <option value="7">7x7</option>
+                <option value="9">9x9</option>
+            </select>
+        </div>
+        <div class="game-board" id="gameBoard"></div>
+        <div class="score-board">
+            <h3>Score: <span id="score">0</span></h3>
+        </div>
+        <div class="message" id="message"></div>
+        <button class="btn btn-primary mt-4" onclick="resetGame()">Reset Game</button>
+    </div>
+
+    <script>
+        const gameBoard = document.getElementById('gameBoard');
+        const scoreElement = document.getElementById('score');
+        const messageElement = document.getElementById('message');
+        const difficultySelect = document.getElementById('difficulty');
+        const boardSizeSelect = document.getElementById('boardSize');
+        let size = 4;
+        let board = [];
+        let score = 0;
+
+        function createBoard() {
+            size = parseInt(boardSizeSelect.value);
+            gameBoard.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            gameBoard.style.width = `${size * 100}px`;
+            gameBoard.style.height = `${size * 100}px`;
+            gameBoard.innerHTML = '';
+            board = [];
+            for (let i = 0; i < size; i++) {
+                board[i] = [];
+                for (let j = 0; j < size; j++) {
+                    board[i][j] = 0;
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    gameBoard.appendChild(tile);
+                }
+            }
+            let initialTiles = getInitialTiles();
+            for (let i = 0; i < initialTiles; i++) {
+                addRandomTile();
+            }
+            updateBoard();
+        }
+
+        function getInitialTiles() {
+            const difficulty = difficultySelect.value;
+            switch (difficulty) {
+                case 'easy':
+                    return 2;
+                case 'medium':
+                    return 4;
+                case 'hard':
+                    return 6;
+                default:
+                    return 2;
+            }
+        }
+
+        function addRandomTile() {
+            let emptyTiles = [];
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (board[i][j] === 0) {
+                        emptyTiles.push({ x: i, y: j });
+                    }
+                }
+            }
+            if (emptyTiles.length > 0) {
+                const { x, y } = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+                board[x][y] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function updateBoard() {
+            const tiles = document.querySelectorAll('.tile');
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    const tile = tiles[i * size + j];
+                    tile.innerHTML = board[i][j] === 0 ? '' : `<span>${board[i][j]}</span>`;
+                    tile.className = 'tile';
+                    if (board[i][j] > 0) {
+                        tile.classList.add(`tile-${board[i][j]}`);
+                    }
+                }
+            }
+            scoreElement.textContent = score;
+        }
+
+        function move(direction) {
+            let moved = false;
+            switch (direction) {
+                case 'up':
+                    for (let j = 0; j < size; j++) {
+                        let column = [];
+                        for (let i = 0; i < size; i++) {
+                            column.push(board[i][j]);
+                        }
+                        let newColumn = slide(column);
+                        for (let i = 0; i < size; i++) {
+                            if (board[i][j] !== newColumn[i]) moved = true;
+                            board[i][j] = newColumn[i];
+                        }
+                    }
+                    break;
+                case 'down':
+                    for (let j = 0; j < size; j++) {
+                        let column = [];
+                        for (let i = size - 1; i >= 0; i--) {
+                            column.push(board[i][j]);
+                        }
+                        let newColumn = slide(column);
+                        newColumn.reverse();
+                        for (let i = 0; i < size; i++) {
+                            if (board[i][j] !== newColumn[i]) moved = true;
+                            board[i][j] = newColumn[i];
+                        }
+                    }
+                    break;
+                case 'left':
+                    for (let i = 0; i < size; i++) {
+                        let newRow = slide(board[i]);
+                        if (board[i].join('') !== newRow.join('')) moved = true;
+                        board[i] = newRow;
+                    }
+                    break;
+                case 'right':
+                    for (let i = 0; i < size; i++) {
+                        let newRow = slide(board[i].slice().reverse());
+                        newRow.reverse();
+                        if (board[i].join('') !== newRow.join('')) moved = true;
+                        board[i] = newRow;
+                    }
+                    break;
+            }
+            if (moved) {
+                addRandomTile();
+                updateBoard();
+                if (isGameOver()) {
+                    messageElement.textContent = 'Game Over!';
+                }
+            }
+        }
+
+        function slide(row) {
+            let newRow = row.filter(val => val);
+            for (let i = 0; i < newRow.length - 1; i++) {
+                if (newRow[i] === newRow[i + 1]) {
+                    newRow[i] *= 2;
+                    newRow[i + 1] = 0;
+                    score += newRow[i];
+                }
+            }
+            newRow = newRow.filter(val => val);
+            while (newRow.length < size) {
+                newRow.push(0);
+            }
+            return newRow;
+        }
+
+        function isGameOver() {
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (board[i][j] === 0) return false;
+                    if (i > 0 && board[i][j] === board[i - 1][j]) return false;
+                    if (i < size - 1 && board[i][j] === board[i + 1][j]) return false;
+                    if (j > 0 && board[i][j] === board[i][j - 1]) return false;
+                    if (j < size - 1 && board[i][j] === board[i][j + 1]) return false;
+                }
+            }
+            return true;
+        }
+
+        function resetGame() {
+            createBoard();
+            score = 0;
+            messageElement.textContent = '';
+        }
+
+        window.onload = () => {
+            createBoard();
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'ArrowUp') move('up');
+                if (event.key === 'ArrowDown') move('down');
+                if (event.key === 'ArrowLeft') move('left');
+                if (event.key === 'ArrowRight') move('right');
+            });
+            boardSizeSelect.addEventListener('change', resetGame);
+            difficultySelect.addEventListener('change', resetGame);
+        };
+    </script>
+</body>
+</html>
