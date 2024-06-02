@@ -305,6 +305,11 @@
             gameBoard.addEventListener('touchmove', handleTouchMove, false);
             boardSizeSelect.addEventListener('change', resetGame);
             difficultySelect.addEventListener('change', resetGame);
+
+            // Prevent default touch actions to disable swipe-down refresh
+            window.addEventListener('touchmove', function(event) {
+                event.preventDefault();
+            }, { passive: false });
         };
     </script>
 </body>
