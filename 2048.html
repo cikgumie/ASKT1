@@ -24,6 +24,7 @@
             padding: 10px;
             background-color: #bbada0;
             border-radius: 10px;
+            touch-action: none; /* Prevent scrolling on touch */
         }
         .tile {
             width: 100%;
@@ -253,6 +254,45 @@
             messageElement.textContent = '';
         }
 
+        // Handle swipe gestures
+        let touchStartX = null;
+        let touchStartY = null;
+
+        function handleTouchStart(event) {
+            const firstTouch = event.touches[0];
+            touchStartX = firstTouch.clientX;
+            touchStartY = firstTouch.clientY;
+        }
+
+        function handleTouchMove(event) {
+            if (!touchStartX || !touchStartY) {
+                return;
+            }
+
+            const touchEndX = event.touches[0].clientX;
+            const touchEndY = event.touches[0].clientY;
+
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX > 0) {
+                    move('left');
+                } else {
+                    move('right');
+                }
+            } else {
+                if (diffY > 0) {
+                    move('up');
+                } else {
+                    move('down');
+                }
+            }
+
+            touchStartX = null;
+            touchStartY = null;
+        }
+
         window.onload = () => {
             createBoard();
             window.addEventListener('keydown', (event) => {
@@ -261,6 +301,8 @@
                 if (event.key === 'ArrowLeft') move('left');
                 if (event.key === 'ArrowRight') move('right');
             });
+            gameBoard.addEventListener('touchstart', handleTouchStart, false);
+            gameBoard.addEventListener('touchmove', handleTouchMove, false);
             boardSizeSelect.addEventListener('change', resetGame);
             difficultySelect.addEventListener('change', resetGame);
         };
