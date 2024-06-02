@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+        }
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 50px);
+            grid-template-rows: repeat(9, 50px);
+            gap: 1px;
+            justify-content: center;
+            margin-bottom: 20px;
+            border: 2px solid #444;
+            background-color: #ffffff;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            background-color: #f9f9f9;
+            border: 1px solid #dddddd;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .cell:nth-child(3n+1) {
+            border-left: 2px solid #444;
+        }
+        .cell:nth-child(3n) {
+            border-right: 2px solid #444;
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid #444;
+        }
+        .cell:nth-child(-n+9),
+        .cell:nth-child(n+64):nth-child(-n+72) {
+            border-top: 2px solid #444;
+        }
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 1.2em;
+            outline: none;
+        }
+        .cell input:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        .highlight {
+            background-color: #f9f9a0;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .easy {
+            background-color: #e6ffed;
+        }
+        .medium {
+            background-color: #fffde6;
+        }
+        .hard {
+            background-color: #ffe6e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Sudoku Game</h1>
+        <div class="mb-3">
+            <select id="difficulty" class="form-select">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+        <div class="sudoku-board" id="sudokuBoard"></div>
+        <button class="btn btn-primary mb-4" onclick="checkSolution()">Check Solution</button>
+        <button class="btn btn-secondary mb-4" onclick="resetGame()">Reset</button>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        const sudokuBoard = document.getElementById('sudokuBoard');
+        const messageElement = document.getElementById('message');
+
+        function createBoard(board, difficulty) {
+            sudokuBoard.innerHTML = '';
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    if (difficulty === 'easy') {
+                        cell.classList.add('easy');
+                    } else if (difficulty === 'medium') {
+                        cell.classList.add('medium');
+                    } else {
+                        cell.classList.add('hard');
+                    }
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = 1;
+                    input.max = 9;
+                    if (board[row][col] !== null) {
+                        input.value = board[row][col];
+                        input.disabled = true;
+                    }
+                    cell.appendChild(input);
+                    sudokuBoard.appendChild(cell);
+                }
+            }
+        }
+
+        function checkSolution() {
+            const inputs = document.querySelectorAll('.cell input');
+            const values = Array.from(inputs).map(input => input.value ? parseInt(input.value) : null);
+            const solvedBoard = chunkArray(values, 9);
+            if (isValidSudoku(solvedBoard)) {
+                messageElement.textContent = 'Congratulations! The solution is correct.';
+            } else {
+                messageElement.textContent = 'There are errors in your solution. Please try again.';
+            }
+        }
+
+        function resetGame() {
+            const difficulty = document.getElementById('difficulty').value;
+            const newBoard = generateSudoku(difficulty);
+            createBoard(newBoard, difficulty);
+            messageElement.textContent = '';
+        }
+
+        function chunkArray(array, size) {
+            const chunkedArray = [];
+            for (let i = 0; i < array.length; i += size) {
+                chunkedArray.push(array.slice(i, size + i));
+            }
+            return chunkedArray;
+        }
+
+        function isValidSudoku(board) {
+            for (let i = 0; i < 9; i++) {
+                if (!isValidRow(board, i) || !isValidColumn(board, i) || !isValidBox(board, i)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function isValidRow(board, row) {
+            const seen = new Set();
+            for (let col = 0; col < 9; col++) {
+                if (board[row][col] !== null) {
+                    if (seen.has(board[row][col])) return false;
+                    seen.add(board[row][col]);
+                }
+            }
+            return true;
+        }
+
+        function isValidColumn(board, col) {
+            const seen = new Set();
+            for (let row = 0; row < 9; row++) {
+                if (board[row][col] !== null) {
+                    if (seen.has(board[row][col])) return false;
+                    seen.add(board[row][col]);
+                }
+            }
+            return true;
+        }
+
+        function isValidBox(board, boxIndex) {
+            const seen = new Set();
+            const rowStart = Math.floor(boxIndex / 3) * 3;
+            const colStart = (boxIndex % 3) * 3;
+            for (let row = rowStart; row < rowStart + 3; row++) {
+                for (let col = colStart; col < colStart + 3; col++) {
+                    if (board[row][col] !== null) {
+                        if (seen.has(board[row][col])) return false;
+                        seen.add(board[row][col]);
+                    }
+                }
+            }
+            return true;
+        }
+
+        function generateSudoku(difficulty) {
+            const board = Array.from({ length: 9 }, () => Array(9).fill(null));
+            fillDiagonal(board);
+            fillRemaining(board, 0, 3);
+            removeDigits(board, difficulty);
+            return board;
+        }
+
+        function fillDiagonal(board) {
+            for (let i = 0; i < 9; i += 3) {
+                fillBox(board, i, i);
+            }
+        }
+
+        function fillBox(board, row, col) {
+            let num;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    do {
+                        num = randomDigit();
+                    } while (!isUnusedInBox(board, row, col, num));
+                    board[row + i][col + j] = num;
+                }
+            }
+        }
+
+        function randomDigit() {
+            return Math.floor(Math.random() * 9) + 1;
+        }
+
+        function isUnusedInBox(board, row, col, num) {
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (board[row + i][col + j] === num) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function fillRemaining(board, i, j) {
+            if (j >= 9 && i < 8) {
+                i++;
+                j = 0;
+            }
+            if (i >= 9 && j >= 9) {
+                return true;
+            }
+            if (i < 3) {
+                if (j < 3) {
+                    j = 3;
+                }
+            } else if (i < 6) {
+                if (j === Math.floor(i / 3) * 3) {
+                    j += 3;
+                }
+            } else {
+                if (j === 6) {
+                    i++;
+                    j = 0;
+                    if (i >= 9) {
+                        return true;
+                    }
+                }
+            }
+            for (let num = 1; num <= 9; num++) {
+                if (isSafe(board, i, j, num)) {
+                    board[i][j] = num;
+                    if (fillRemaining(board, i, j + 1)) {
+                        return true;
+                    }
+                    board[i][j] = null;
+                }
+            }
+            return false;
+        }
+
+        function isSafe(board, i, j, num) {
+            return isUnusedInRow(board, i, num) &&
+                   isUnusedInColumn(board, j, num) &&
+                   isUnusedInBox(board, i - (i % 3), j - (j % 3), num);
+        }
+
+        function isUnusedInRow(board, i, num) {
+            for (let j = 0; j < 9; j++) {
+                if (board[i][j] === num) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function isUnusedInColumn(board, j, num) {
+            for (let i = 0; i < 9; i++) {
+                if (board[i][j] === num) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function removeDigits(board, difficulty) {
+            let count;
+            if (difficulty === 'easy') {
+                count = 40;
+            } else if (difficulty === 'medium') {
+                count = 50;
+            } else {
+                count = 60;
+            }
+            while (count !== 0) {
+                const cellId = randomCell();
+                const i = Math.floor(cellId / 9);
+                const j = cellId % 9;
+                if (board[i][j] !== null) {
+                    count--;
+                    board[i][j] = null;
+                }
+            }
+        }
+
+        function randomCell() {
+            return Math.floor(Math.random() * 81);
+        }
+
+        window.onload = () => {
+            resetGame();
+        };
+    </script>
+</body>
+</html>
